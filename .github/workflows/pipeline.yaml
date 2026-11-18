@@ -151,8 +151,14 @@ jobs:
           URL=$(aws cloudformation describe-stacks --stack-name ${TESTING_STACK_NAME} \
             --query "Stacks[0].Outputs[?OutputKey=='HelloWorldApi'].OutputValue" --output text)
           echo "Calling $URL"
-          curl -sf "$URL" | tee response.json
-          grep -q "hello world" response.json
+          # retry: right after a canary deploy the new alias can take a few seconds to serve
+          for i in $(seq 1 12); do
+            if curl -sf "$URL" -o response.json && grep -q "hello world" response.json; then
+              cat response.json; exit 0
+            fi
+            echo "attempt $i not ready yet, retrying in 10s"; sleep 10
+          done
+          echo "smoke test failed"; exit 1
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
