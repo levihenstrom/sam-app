@@ -19,6 +19,9 @@ Resources:
       Runtime: nodejs22.x
       Architectures:
         - x86_64
+      AutoPublishAlias: live          # publish a new version + "live" alias on every deploy
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes # CodeDeploy: 10% of traffic for 5 min, then 100%
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
